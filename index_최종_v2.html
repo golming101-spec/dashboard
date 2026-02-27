@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>수입원물 관리 대시보드</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --border:#30363d;
+  --accent:#1f6feb; --a2:#388bfd;
+  --green:#3fb950; --yellow:#d29922; --red:#f85149;
+  --orange:#db6d28; --purple:#bc8cff; --cyan:#39c5cf;
+  --text:#e6edf3; --t2:#8b949e; --t3:#6e7681;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;min-height:100vh;overflow-x:hidden;}
+
+/* HEADER */
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 14px;position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;}
+.hdr-title{font-size:15px;font-weight:700;color:var(--a2);}
+.hdr-sub{font-size:10px;color:var(--t3);margin-top:1px;}
+.sync-btn{background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--t2);padding:7px 13px;font-size:11px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s;}
+.sync-btn:active{background:var(--accent);color:#fff;}
+.spin{display:inline-block;animation:rot .7s linear infinite;}
+@keyframes rot{to{transform:rotate(360deg);}}
+
+/* STATUS BAR */
+.status-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;}
+.status-bar::-webkit-scrollbar{display:none;}
+.stat-item{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:11px;}
+.stat-dot{width:6px;height:6px;border-radius:50%;}
+
+/* TABS */
+.tabs{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;padding:0 6px;position:sticky;top:88px;z-index:99;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:11px 13px;font-size:12px;font-weight:500;color:var(--t3);white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:'Noto Sans KR',sans-serif;}
+.tab.on{color:var(--a2);border-bottom-color:var(--a2);}
+
+/* CONTENT */
+.content{padding:12px;}
+.page{display:none;}
+.page.on{display:block;}
+
+/* LOADING */
+.ldg{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;gap:10px;}
+.ldg-spin{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--a2);border-radius:50%;animation:rot .8s linear infinite;}
+.ldg-txt{color:var(--t3);font-size:12px;}
+
+/* CARDS */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.cg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;}
+.cl{font-size:10px;color:var(--t3);margin-bottom:3px;}
+.cv{font-size:21px;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1.2;}
+.cs{font-size:10px;color:var(--t3);margin-top:2px;}
+.cb .cv{color:var(--a2);} .cg2 .cv{color:var(--green);} .cy .cv{color:var(--yellow);}
+.cr .cv{color:var(--red);} .cc .cv{color:var(--cyan);} .cp .cv{color:var(--purple);}
+
+/* SECTION */
+.stitle{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+
+/* TABLE */
+.tw{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;min-width:480px;}
+thead{background:var(--bg3);}
+th{padding:7px 9px;text-align:left;font-size:10px;font-weight:600;color:var(--t3);white-space:nowrap;border-bottom:1px solid var(--border);}
+td{padding:7px 9px;border-bottom:1px solid rgba(48,54,61,.5);font-size:11px;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tbody tr:active{background:rgba(255,255,255,.03);}
+
+/* BADGE */
+.bd{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;}
+.g{background:rgba(63,185,80,.15);color:var(--green);}
+.y{background:rgba(210,153,34,.15);color:var(--yellow);}
+.r{background:rgba(248,81,73,.15);color:var(--red);}
+.b{background:rgba(56,139,253,.15);color:var(--a2);}
+.c{background:rgba(57,197,207,.15);color:var(--cyan);}
+.p{background:rgba(188,140,255,.15);color:var(--purple);}
+.o{background:rgba(219,109,40,.15);color:var(--orange);}
+.gr{background:rgba(139,148,158,.15);color:var(--t2);}
+
+/* ALERT */
+.al{border-radius:var(--r);padding:9px 12px;margin-bottom:10px;font-size:11px;display:flex;gap:7px;align-items:flex-start;}
+.al-r{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.25);color:var(--red);}
+.al-y{background:rgba(210,153,34,.1);border:1px solid rgba(210,153,34,.25);color:var(--yellow);}
+.al-b{background:rgba(56,139,253,.1);border:1px solid rgba(56,139,253,.25);color:var(--a2);}
+.al-g{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.25);color:var(--green);}
+
+/* FILTER */
+.fr{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.fr select,.fr input{background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;flex:1;min-width:100px;}
+.fr input:focus,.fr select:focus{border-color:var(--a2);}
+
+/* PAYMENT CARD */
+.pc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:8px;}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.pd{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--red);font-weight:700;}
+.pa{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--yellow);font-weight:700;}
+
+/* PROGRESS BAR */
+.pb-t{background:var(--bg3);border-radius:4px;height:7px;overflow:hidden;margin-top:6px;}
+.pb-f{height:100%;border-radius:4px;transition:width .8s;}
+
+/* ERROR */
+.err{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);border-radius:var(--r);padding:20px;text-align:center;margin:20px 0;}
+.err h3{color:var(--red);margin-bottom:8px;}
+.err p{color:var(--t3);font-size:12px;line-height:1.7;}
+
+.mono{font-family:'JetBrains Mono',monospace;}
+.tr{text-align:right;}
+.mb12{margin-bottom:12px;}
+
+/* DDAY */
+.dd-over{color:var(--red);font-weight:700;}
+.dd-soon{color:var(--yellow);font-weight:600;}
+.dd-ok{color:var(--green);}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div>
+    <div class="hdr-title">📦 수입원물 관리</div>
+    <div class="hdr-sub" id="syncTime">데이터 불러오는 중...</div>
+  </div>
+  <button class="sync-btn" id="syncBtn" onclick="init()">
+    <span id="syncIcon">🔄</span> 새로고침
+  </button>
+</header>
+
+<div class="status-bar" id="statusBar">
+  <div class="stat-item"><div class="stat-dot" style="background:var(--t3)"></div>로딩 중...</div>
+</div>
+
+<nav class="tabs">
+  <div class="tab on" onclick="go('dashboard',this)">📊 현황</div>
+  <div class="tab" onclick="go('progress',this)">🚢 진행사항</div>
+  <div class="tab" onclick="go('active',this)">⚡ 진행중</div>
+  <div class="tab" onclick="go('schedule',this)">📅 스케줄</div>
+  <div class="tab" onclick="go('payment',this)">💳 지급일정</div>
+  <div class="tab" onclick="go('gsg',this)">💰 GSG유예</div>
+  <div class="tab" onclick="go('inventory',this)">🏭 창고재고</div>
+  <div class="tab" onclick="go('sim',this)">🔢 시뮬레이션</div>
+</nav>
+
+<div class="content">
+  <div id="page-dashboard" class="page on"><div class="ldg"><div class="ldg-spin"></div><div class="ldg-txt">구글 시트에서 실시간 데이터 불러오는 중...</div></div></div>
+  <div id="page-progress" class="page"><div class="ldg"><div class="ldg-spin"></div></div></div>
+  <div id="page-active" class="page"><div class="ldg"><div class="ldg-spin"></div></div></div>
+  <div id="page-schedule" class="page"><div class="ldg"><div class="ldg-spin"></div></div></div>
+  <div id="page-payment" class="page"><div class="ldg"><div class="ldg-spin"></div></div></div>
+  <div id="page-gsg" class="page"><div class="ldg"><div class="ldg-spin"></div></div></div>
+  <div id="page-inventory" class="page"><div class="ldg"><div class="ldg-spin"></div></div></div>
+  <div id="page-sim" class="page"><div class="ldg"><div class="ldg-spin"></div></div></div>
+</div>
+
+<script>
+
+// ===== CSV PARSE =====
+function parseCSV(txt) {
+  const rows = [];
+  const lines = txt.split('\n');
+  for (const line of lines) {
+    const cells = []; let q=false, cell='';
+    for (let i=0;i<line.length;i++) {
+      const ch=line[i];
+      if(ch==='"'){q=!q;}
+      else if(ch===','&&!q){cells.push(cell.trim());cell='';}
+      else{cell+=ch;}
+    }
+    cells.push(cell.trim());
+    rows.push(cells);
+  }
+  return rows;
+}
+
+
+// ===== HELPERS =====
+const fmt = n => {
+  if(n===null||n===undefined||n===''||n==='-') return '-';
+  const num=parseFloat(String(n).replace(/,/g,''));
+  return isNaN(num)?n:num.toLocaleString('ko-KR');
+};
+const fmtB = n => {
+  const num=parseFloat(String(n||0).replace(/,/g,''));
+  if(isNaN(num)||num===0) return '-';
+  return (Math.round(num/1e8*10)/10)+'억';
+};
+const fmtDate = s => {
+  if(!s) return '-'; s=s.trim();
+  if(s.includes('년')) return s;
+  const m=s.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  return m?`${m[1]}.${m[2].padStart(2,'0')}.${m[3].padStart(2,'0')}`:s;
+};
+const dday = dateStr => {
+  const m=(dateStr||'').match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if(!m) return null;
+  const d=new Date(m[1],m[2]-1,m[3]);
+  return Math.ceil((d-new Date())/86400000);
+};
+const ddBadge = dd => {
+  if(dd===null) return '-';
+  if(dd<0) return `<span class="bd r">D+${Math.abs(dd)}</span>`;
+  if(dd<=7) return `<span class="bd r">D-${dd}</span>`;
+  if(dd<=14) return `<span class="bd y">D-${dd}</span>`;
+  return `<span class="bd g">D-${dd}</span>`;
+};
+const sBadge = s => {
+  if(!s||s==='-') return '<span class="bd gr">-</span>';
+  if(s.includes('완료')) return '<span class="bd g">완료</span>';
+  if(s.includes('수입대기')) return '<span class="bd y">수입대기</span>';
+  if(s.includes('창고')) return '<span class="bd b">창고</span>';
+  if(s.includes('사용중')) return '<span class="bd c">사용중</span>';
+  if(s.includes('입항중')) return '<span class="bd p">입항중</span>';
+  if(s.includes('정밀')) return '<span class="bd r">정밀</span>';
+  if(s.includes('대기중')) return '<span class="bd o">대기중</span>';
+  return `<span class="bd gr">${s}</span>`;
+};
+const bBadge = b => {
+  if(!b||!b.trim()) return '-';
+  const mp={BRF:'g',SEARA:'o','C-Vale':'c',AURORA:'b',SAO:'y',GT:'gr',VIBRA:'gr',LEVO:'p','SEARA(유예분)':'o',BETAGRO:'y',KAONA:'c',PANUS:'b',TFG:'g',TPG:'gr'};
+  return `<span class="bd ${mp[b.trim()]||'gr'}">${b.trim()}</span>`;
+};
+
+// ===== INIT =====
+function init() {
+  const btn=document.getElementById('syncBtn');
+  const icon=document.getElementById('syncIcon');
+  btn.disabled=true; icon.className='spin'; icon.textContent='⏳';
+
+  document.getElementById('page-dashboard').innerHTML='<div class="ldg"><div class="ldg-spin"></div><div class="ldg-txt">구글 시트에서 데이터 불러오는 중...</div></div>';
+
+  google.script.run
+    .withSuccessHandler(function(data) {
+      if (!data || !data.success) {
+        showErr('page-dashboard', '데이터 로드 실패', data ? data.error : '알 수 없는 오류');
+        btn.disabled=false; icon.className=''; icon.textContent='🔄';
+        return;
+      }
+
+      // 2차원 배열을 그대로 사용 (Apps Script는 이미 배열로 반환)
+      D = {
+        진행: data['진행사항']||[],
+        리스트: data['리스트']||[],
+        스케줄: data['스케줄']||[],
+        하이웍스: data['하이웍스']||[],
+        현황표: data['현황표']||[],
+        수급계획: data['수급계획']||[],
+        gsg시뮬: data['gsg']||[],
+        재고: data['재고']||[],
+      };
+
+      // 디버그: 데이터 확인
+      console.log('데이터 로드 완료:', {
+        진행: D.진행 ? D.진행.length + '행' : '없음',
+        리스트: D.리스트 ? D.리스트.length + '행' : '없음',
+        gsg시뮬: D.gsg시뮬 ? D.gsg시뮬.length + '행' : '없음',
+        재고: D.재고 ? D.재고.length + '행' : '없음',
+      });
+
+      document.getElementById('syncTime').textContent = data.timestamp + ' 동기화 완료';
+      renderAll();
+      renderStatusBar();
+      btn.disabled=false; icon.className=''; icon.textContent='🔄';
+    })
+    .withFailureHandler(function(e) {
+      showErr('page-dashboard', '서버 오류', e.message||e);
+      btn.disabled=false; icon.className=''; icon.textContent='🔄';
+    })
+    .getAllData();
+}
+
+function showErr(pid, title, msg) {
+  document.getElementById(pid).innerHTML=`
+    <div class="err"><h3>⚠️ ${title}</h3>
+    <p>구글 시트 공유 설정을 확인해주세요.<br>
+    "링크가 있는 모든 사용자 → 뷰어" 필요<br><br>
+    <span style="color:var(--red);font-size:10px;">${msg||''}</span></p></div>`;
+}
+
+function renderAll() {
+  renderDashboard();
+  renderProgress();
+  renderActive();
+  renderSchedule();
+  renderPayment();
+  renderGSG();
+  renderInventory();
+  renderSim();
+}
+
+// ===== STATUS BAR =====
+function renderStatusBar() {
+  const rows = getProgressRows();
+  const done = rows.filter(r=>(r[14]||'').includes('완료')).length;
+  const waiting = rows.filter(r=>(r[14]||'').includes('수입대기')).length;
+  const arriving = rows.filter(r=>(r[14]||'').includes('입항중')).length;
+  const urgent = rows.filter(r=>{const dd=dday(r[5]);return dd!==null&&dd<=7&&!(r[14]||'').includes('완료');}).length;
+  document.getElementById('statusBar').innerHTML=`
+    <div class="stat-item"><div class="stat-dot" style="background:var(--green)"></div>완료 ${done}건</div>
+    <div class="stat-item"><div class="stat-dot" style="background:var(--yellow)"></div>수입대기 ${waiting}건</div>
+    <div class="stat-item"><div class="stat-dot" style="background:var(--purple)"></div>입항중 ${arriving}건</div>
+    ${urgent>0?`<div class="stat-item"><div class="stat-dot" style="background:var(--red)"></div><b style="color:var(--red)">D-7이내 ${urgent}건</b></div>`:''}
+  `;
+}
+
+// ===== GET PROGRESS ROWS =====
+function getProgressRows() {
+  if(!D.진행||!D.진행.length) return [];
+  return D.진행.slice(3).filter(r=>r[2]&&r[2].trim()&&r[3]&&r[3].trim());
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  const rows = getProgressRows();
+  if(!rows.length){ showErr('page-dashboard','진행사항 로드 실패','시트 공유 확인'); return; }
+
+  const total=rows.length;
+  const done=rows.filter(r=>(r[14]||'').includes('완료')).length;
+  const ip=rows.filter(r=>{const s=r[14]||'';return s.includes('수입대기')||s.includes('창고')||s.includes('사용중')||s.includes('대기중')||s.includes('정밀');}).length;
+  const arr=rows.filter(r=>(r[14]||'').includes('입항중')).length;
+  const pct=Math.round(done/total*100);
+
+  // 브랜드별
+  const bmap={};
+  rows.forEach(r=>{
+    const b=(r[3]||'').trim(); if(!b) return;
+    if(!bmap[b]){bmap[b]={완:0,진:0,합:0};}
+    bmap[b].합++;
+    if((r[14]||'').includes('완료')) bmap[b].완++; else bmap[b].진++;
+  });
+
+  // 이번달 지급 긴급 건
+  const now=new Date();
+  const urgent=rows.filter(r=>{const dd=dday(r[5]);return dd!==null&&dd<=14&&!(r[14]||'').includes('완료');});
+
+  document.getElementById('page-dashboard').innerHTML=`
+    ${urgent.length>0?`<div class="al al-r">⚠️ 지급기한 D-14 이내 ${urgent.length}건 — 지급일정 탭 확인 요망</div>`:''}
+    <div class="cg">
+      <div class="card cb"><div class="cl">총 컨테이너</div><div class="cv">${total}</div><div class="cs">전체 진행 건수</div></div>
+      <div class="card cg2"><div class="cl">완료</div><div class="cv">${done}</div><div class="cs">출고 완료</div></div>
+      <div class="card cy"><div class="cl">진행중</div><div class="cv">${ip}</div><div class="cs">수입대기/창고 등</div></div>
+      <div class="card cp"><div class="cl">입항중</div><div class="cv">${arr}</div><div class="cs">도착 대기</div></div>
+    </div>
+
+    <div class="card mb12">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:var(--t3);">전체 진행률</span>
+        <span class="mono" style="font-size:12px;color:var(--green);">${done} / ${total} (${pct}%)</span>
+      </div>
+      <div class="pb-t"><div class="pb-f" style="width:${pct}%;background:var(--green);"></div></div>
+    </div>
+
+    <div class="stitle">브랜드별 현황</div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>브랜드</th><th>완료</th><th>진행</th><th>합계</th><th>완료율</th></tr></thead>
+        <tbody>
+          ${Object.entries(bmap).sort((a,b)=>b[1].합-a[1].합).map(([b,d])=>`
+            <tr>
+              <td>${bBadge(b)}</td>
+              <td class="mono" style="color:var(--green);">${d.완}</td>
+              <td class="mono" style="color:var(--yellow);">${d.진}</td>
+              <td class="mono" style="font-weight:700;">${d.합}</td>
+              <td style="min-width:70px;">
+                <div class="pb-t" style="height:5px;">
+                  <div class="pb-f" style="width:${Math.round(d.완/d.합*100)}%;background:var(--green);"></div>
+                </div>
+                <div style="font-size:9px;color:var(--t3);margin-top:2px;">${Math.round(d.완/d.합*100)}%</div>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    ${urgent.length>0?`
+    <div class="stitle">⚠️ 긴급 — D-14 이내 지급기한</div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>브랜드</th><th>B/L</th><th>지급기한</th><th>D-day</th><th>상황</th></tr></thead>
+        <tbody>
+          ${urgent.map(r=>{const dd=dday(r[5]);return`
+            <tr>
+              <td>${bBadge(r[3])}</td>
+              <td class="mono" style="font-size:10px;">${(r[9]||'').trim()}</td>
+              <td class="mono" style="font-size:10px;color:var(--red);">${fmtDate(r[5])}</td>
+              <td>${ddBadge(dd)}</td>
+              <td>${sBadge(r[14])}</td>
+            </tr>`}).join('')}
+        </tbody>
+      </table>
+    </div>`:''}
+  `;
+}
+
+// ===== PROGRESS =====
+function renderProgress() {
+  const rows=getProgressRows();
+  if(!rows.length){showErr('page-progress','데이터 없음','');return;}
+  const brands=[...new Set(rows.map(r=>(r[3]||'').trim()).filter(Boolean))].sort();
+
+  const div=document.getElementById('page-progress');
+  div.innerHTML=`
+    <div class="fr">
+      <select id="ps" onchange="filterProgress()"><option value="">전체 상황</option>
+        ${['완료','수입대기','창고','입항중','사용중','대기중','정밀'].map(s=>`<option>${s}</option>`).join('')}
+      </select>
+      <select id="pb2" onchange="filterProgress()"><option value="">전체 브랜드</option>
+        ${brands.map(b=>`<option>${b}</option>`).join('')}
+      </select>
+    </div>
+    <div id="p-cnt" style="font-size:11px;color:var(--t3);margin-bottom:8px;"></div>
+    <div id="p-tbl"></div>
+  `;
+  filterProgress();
+}
+
+function filterProgress(){
+  const rows=getProgressRows();
+  const sf=document.getElementById('ps')?.value||'';
+  const bf=document.getElementById('pb2')?.value||'';
+  const f=rows.filter(r=>(!sf||(r[14]||'').includes(sf))&&(!bf||(r[3]||'').trim()===bf));
+  document.getElementById('p-cnt').textContent=`${f.length}건`;
+  document.getElementById('p-tbl').innerHTML=`
+    <div class="tw"><table>
+      <thead><tr><th>오더월</th><th>브랜드</th><th>B/L</th><th>선적일</th><th>ETA</th><th>지급기한</th><th>D-day</th><th>오퍼가</th><th>BOX</th><th>상황</th><th>비고</th></tr></thead>
+      <tbody>
+        ${f.map(r=>`<tr>
+          <td style="font-size:10px;color:var(--t2);">${r[1]||'-'}</td>
+          <td>${bBadge(r[3])}</td>
+          <td class="mono" style="font-size:10px;">${(r[9]||'').trim()}</td>
+          <td class="mono" style="font-size:10px;">${fmtDate(r[4])}</td>
+          <td class="mono" style="font-size:10px;">${fmtDate(r[6])}</td>
+          <td class="mono" style="font-size:10px;color:var(--red);">${fmtDate(r[5])}</td>
+          <td>${ddBadge(dday(r[5]))}</td>
+          <td class="mono tr">${fmt(r[10])}</td>
+          <td class="mono tr">${fmt(r[12])}</td>
+          <td>${sBadge(r[14])}</td>
+          <td style="font-size:10px;color:var(--t3);">${r[32]||''}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// ===== ACTIVE =====
+function renderActive(){
+  const rows=getProgressRows().filter(r=>!(r[14]||'').includes('완료'));
+  const brands=[...new Set(rows.map(r=>(r[3]||'').trim()).filter(Boolean))].sort();
+  document.getElementById('page-active').innerHTML=`
+    <div class="fr">
+      <select id="as2" onchange="filterActive()"><option value="">전체 상황</option>
+        ${['수입대기','창고','입항중','대기중','정밀','사용중'].map(s=>`<option>${s}</option>`).join('')}
+      </select>
+      <select id="ab2" onchange="filterActive()"><option value="">전체 브랜드</option>
+        ${brands.map(b=>`<option>${b}</option>`).join('')}
+      </select>
+    </div>
+    <div id="a-cnt" style="font-size:11px;color:var(--t3);margin-bottom:8px;"></div>
+    <div id="a-tbl"></div>`;
+  filterActive();
+}
+
+function filterActive(){
+  const rows=getProgressRows().filter(r=>!(r[14]||'').includes('완료'));
+  const sf=document.getElementById('as2')?.value||'';
+  const bf=document.getElementById('ab2')?.value||'';
+  const f=rows.filter(r=>(!sf||(r[14]||'').includes(sf))&&(!bf||(r[3]||'').trim()===bf));
+  document.getElementById('a-cnt').textContent=`${f.length}건 진행중`;
+  document.getElementById('a-tbl').innerHTML=`
+    <div class="tw"><table>
+      <thead><tr><th>오더월</th><th>브랜드</th><th>B/L</th><th>ETA</th><th>지급기한</th><th>D-day</th><th>오퍼가</th><th>원가</th><th>BOX</th><th>상황</th><th>비고</th></tr></thead>
+      <tbody>
+        ${f.map(r=>{
+          const dd=dday(r[5]);
+          const wc=dd!==null&&dd<=0?'dd-over':dd<=7?'dd-soon':dd<=14?'dd-soon':'dd-ok';
+          return`<tr>
+            <td style="font-size:10px;color:var(--t2);">${r[1]||'-'}</td>
+            <td>${bBadge(r[3])}</td>
+            <td class="mono" style="font-size:10px;">${(r[9]||'').trim()}</td>
+            <td class="mono" style="font-size:10px;">${fmtDate(r[6])}</td>
+            <td class="mono" style="font-size:10px;color:var(--red);">${fmtDate(r[5])}</td>
+            <td>${ddBadge(dd)}</td>
+            <td class="mono tr">${fmt(r[10])}</td>
+            <td class="mono tr" style="font-size:10px;">${r[11]&&parseFloat(r[11])>0?fmtB(r[11]):'-'}</td>
+            <td class="mono tr">${fmt(r[12])}</td>
+            <td>${sBadge(r[14])}</td>
+            <td style="font-size:10px;color:var(--t3);">${r[32]||''}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// ===== SCHEDULE =====
+function renderSchedule(){
+  const raw=D.스케줄;
+  if(!raw){showErr('page-schedule','스케줄 데이터 없음','');return;}
+  const labels=['기초수량','입항수량','사용 수량','월말수량'];
+  const colors={기초수량:'var(--a2)',입항수량:'var(--green)','사용 수량':'var(--yellow)',월말수량:'var(--text)'};
+
+  const dataRows=raw.slice(3,7).filter(r=>r[1]&&r[1].trim());
+  const detailRows=raw.slice(10,16).filter(r=>r.some(c=>c&&c.trim()));
+  const months=['현재(02.06)','2월','3월','4월','5월','6월','7월'];
+
+  document.getElementById('page-schedule').innerHTML=`
+    <div class="stitle">월별 수급 스케줄 (컨테이너 기준)</div>
+    <div class="tw"><table>
+      <thead><tr><th>구분</th>${months.map(m=>`<th>${m}</th>`).join('')}</tr></thead>
+      <tbody>
+        ${dataRows.map(r=>{
+          const lbl=(r[1]||'').trim();
+          const isMal=lbl.includes('월말');
+          const vals=[r[2],r[3],r[4],r[5],r[6],r[7],r[8]].map(v=>v||'-');
+          return`<tr style="${isMal?'background:var(--bg3);font-weight:700;':''}">
+            <td style="color:${colors[lbl]||'var(--t2)'};">${lbl}</td>
+            ${vals.map((v,i)=>{
+              const n=parseFloat(v);
+              const col=isMal&&!isNaN(n)?(n<0?'var(--red)':n<10?'var(--yellow)':'var(--green)'):'';
+              return`<td class="mono tr" style="${col?'color:'+col+';font-weight:700;':''}">${isNaN(n)?v:n}</td>`;
+            }).join('')}
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>
+
+    <div class="al al-r">⚠️ 5월부터 재고 부족 예상 — 12월 오더 미확정 상태</div>
+
+    <div class="stitle" style="margin-top:12px;">입항수량 상세 (오더별)</div>
+    <div class="tw"><table>
+      <thead><tr><th>구분</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th><th>7월</th><th>합계</th><th>비고</th></tr></thead>
+      <tbody>
+        ${detailRows.map(r=>`<tr>
+          <td style="font-size:10px;color:var(--t3);">${r[1]||'-'}</td>
+          <td class="mono tr">${r[3]||'-'}</td><td class="mono tr">${r[4]||'-'}</td>
+          <td class="mono tr">${r[5]||'-'}</td><td class="mono tr">${r[6]||'-'}</td>
+          <td class="mono tr">${r[7]||'-'}</td><td class="mono tr">${r[8]||'-'}</td>
+          <td class="mono tr" style="font-weight:700;">${r[9]||'-'}</td>
+          <td style="font-size:10px;color:var(--t3);">${r[10]||''}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
+  `;
+}
+
+// ===== PAYMENT (하이웍스 → 지급일정) =====
+function renderPayment(){
+  const raw=D.하이웍스;
+  if(!raw){showErr('page-payment','지급일정 데이터 없음','');return;}
+
+  // 미지급 목록 (row 2~19 — B/L, 지급기한, 금액)
+  const unpaid=raw.slice(2).filter(r=>r[1]&&r[1].toString().includes('월')&&r[3]&&r[3].trim());
+  // 지출내역 (row 25이후)
+  const paid=raw.slice(25).filter(r=>r[1]&&r[1].trim()&&r[4]&&parseFloat(r[4].toString().replace(/,/g,''))>0);
+
+  const brands=[...new Set(unpaid.map(r=>(r[2]||'').trim()).filter(Boolean))].sort();
+  const total=unpaid.reduce((a,r)=>a+(parseFloat((r[5]||'0').toString().replace(/,/g,''))||0),0);
+
+  document.getElementById('page-payment').innerHTML=`
+    <div class="cg3">
+      <div class="card cr"><div class="cl">미지급 합계</div><div class="cv" style="font-size:16px;">${fmtB(total)}</div><div class="cs">${unpaid.length}건</div></div>
+      <div class="card cy"><div class="cl">이번달 지급</div><div class="cv" style="font-size:16px;">${unpaid.filter(r=>fmtDate(r[3]).startsWith('2026.02')).length}건</div><div class="cs">2월 기준</div></div>
+      <div class="card cg2"><div class="cl">지출 완료</div><div class="cv" style="font-size:16px;">${paid.length}건</div><div class="cs">기지급</div></div>
+    </div>
+
+    <div class="fr">
+      <select id="pm" onchange="filterPay()"><option value="">전체 월</option>
+        <option value="2026.02">2월</option><option value="2026.03">3월</option><option value="2026.04">4월</option>
+      </select>
+      <select id="pbr" onchange="filterPay()"><option value="">전체 브랜드</option>
+        ${brands.map(b=>`<option>${b}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="stitle">미지급 목록 (지급일정)</div>
+    <div id="pay-list"></div>
+
+    <div class="stitle" style="margin-top:12px;">지출 완료 내역</div>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>지출일</th><th>금액</th><th>B/L</th></tr></thead>
+      <tbody>
+        ${paid.slice(0,15).map((r,i)=>`<tr>
+          <td class="mono" style="color:var(--t3);">${i+1}</td>
+          <td class="mono" style="font-size:10px;">${fmtDate(r[1])}</td>
+          <td class="mono tr" style="color:var(--green);">${fmtB(r[4])}</td>
+          <td class="mono" style="font-size:10px;">${(r[7]||'').trim()}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
+  `;
+  filterPay();
+}
+
+function filterPay(){
+  const raw=D.하이웍스;
+  if(!raw) return;
+  const unpaid=raw.slice(2).filter(r=>r[1]&&r[1].toString().includes('월')&&r[3]&&r[3].trim());
+  const mf=document.getElementById('pm')?.value||'';
+  const bf=document.getElementById('pbr')?.value||'';
+  const f=unpaid.filter(r=>(!mf||fmtDate(r[3]).startsWith(mf))&&(!bf||(r[2]||'').trim()===bf));
+  document.getElementById('pay-list').innerHTML=`
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>오더월</th><th>브랜드</th><th>지급기한</th><th>B/L</th><th>금액</th><th>비고</th></tr></thead>
+      <tbody>
+        ${f.map((r,i)=>`<tr>
+          <td class="mono" style="color:var(--t3);">${i+1}</td>
+          <td style="font-size:10px;color:var(--t2);">${r[1]||''}</td>
+          <td>${bBadge(r[2])}</td>
+          <td class="mono" style="font-size:10px;color:var(--red);">${fmtDate(r[3])}</td>
+          <td class="mono" style="font-size:10px;">${(r[4]||'').trim()}</td>
+          <td class="mono tr">${fmtB(r[5])}</td>
+          <td style="font-size:10px;color:var(--t3);">${r[6]||''}</td>
+        </tr>`).join('')}
+        <tr style="background:var(--bg3);font-weight:700;">
+          <td colspan="5" style="text-align:right;padding-right:12px;">합계</td>
+          <td class="mono tr" style="color:var(--yellow);">${fmtB(f.reduce((a,r)=>a+(parseFloat((r[5]||'0').toString().replace(/,/g,''))||0),0))}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table></div>`;
+}
+
+// ===== GSG 유예 시뮬레이션 =====
+function renderGSG(){
+  const raw=D.gsg시뮬;
+  if(!raw){showErr('page-gsg','GSG 결제유예 데이터 없음','');return;}
+
+  // 데이터 행 찾기 (날짜 형태 행)
+  const dataRows=raw.filter(r=>r[0]&&(r[0].toString().includes('-')||r[0].toString().includes('.')||r[0].toString().match(/\d{4}/)));
+  const totalRow=raw.find(r=>r[0]&&r[0].toString().includes('합'));
+
+  document.getElementById('page-gsg').innerHTML=`
+    <div class="al al-b">💡 GSG 결제유예 시뮬레이션 — 구글 시트(GSG결제유예시뮬레이션) 실시간 연동</div>
+    <div class="tw"><table>
+      <thead>
+        <tr>
+          ${(raw[0]||[]).filter(c=>c&&c.trim()).slice(0,8).map(h=>`<th>${h}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${raw.slice(1).filter(r=>r.some(c=>c&&c.trim())).slice(0,50).map(r=>`
+          <tr>
+            ${r.slice(0,8).map((c,i)=>{
+              const n=parseFloat((c||'').toString().replace(/,/g,''));
+              const isAmt=i>=2&&!isNaN(n)&&n>1000000;
+              return`<td class="mono ${isAmt?'tr':''}" style="font-size:${isAmt?'10':'11'}px;">${isAmt?fmtB(n):fmtDate(c||'-')}</td>`;
+            }).join('')}
+          </tr>`).join('')}
+      </tbody>
+    </table></div>
+  `;
+}
+
+// ===== INVENTORY =====
+function renderInventory(){
+  const raw=D.재고;
+  if(!raw){showErr('page-inventory','재고 데이터 없음','');return;}
+
+  // 헤더 찾기 (B/L 포함 행)
+  let hIdx=raw.findIndex(r=>r.some(c=>(c||'').toString().includes('B/L')||(c||'').toString().includes('B.L')));
+  if(hIdx<0) hIdx=5;
+  const headers=raw[hIdx]||[];
+  const dataRows=raw.slice(hIdx+1).filter(r=>r.some(c=>c&&c.toString().trim()&&c.toString().trim()!=='-'));
+
+  // 합계 계산
+  const qtyIdx=headers.findIndex(h=>(h||'').toString().includes('재고')||(h||'').toString().includes('수량'));
+  const totalQty=qtyIdx>=0?dataRows.reduce((a,r)=>a+(parseFloat((r[qtyIdx]||'0').toString().replace(/,/g,''))||0),0):0;
+
+  document.getElementById('page-inventory').innerHTML=`
+    <div class="cg">
+      <div class="card cc"><div class="cl">총 재고 박스</div><div class="cv">${totalQty.toLocaleString()}</div><div class="cs">삼일2냉장 기준</div></div>
+      <div class="card cb"><div class="cl">총 컨테이너</div><div class="cv">${dataRows.length}</div><div class="cs">B/L 기준</div></div>
+    </div>
+    <div class="al al-y">⚠️ 재고확인서 기준 — 구글 시트(재고확인서_삼일2냉장) 실시간 연동</div>
+    <div class="tw"><table>
+      <thead><tr>${headers.filter(h=>h&&h.trim()).slice(0,10).map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+      <tbody>
+        ${dataRows.slice(0,60).map(r=>`<tr>
+          ${r.slice(0,10).map((c,i)=>{
+            const n=parseFloat((c||'').toString().replace(/,/g,''));
+            const isQty=!isNaN(n)&&n>100;
+            return`<td class="mono ${isQty?'tr':''}" style="font-size:${isQty?'11':'10'}px;">${isQty?n.toLocaleString():(c||'-')}</td>`;
+          }).join('')}
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
+  `;
+}
+
+// ===== SIMULATION =====
+function renderSim(){
+  document.getElementById('page-sim').innerHTML=`
+    <div class="stitle">SL FnF 사용량 기준 수급 시뮬레이션</div>
+    <div class="card mb12">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <div style="font-size:10px;color:var(--t3);font-weight:700;margin-bottom:8px;">📦 사용 설정</div>
+          ${[['월 SL가공(컨)','ss',19],['월 도매(컨)','sw',12.8],['현재재고(컨)','sk',46]].map(([l,id,v])=>`
+            <div style="margin-bottom:8px;">
+              <div style="font-size:10px;color:var(--t3);margin-bottom:3px;">${l}</div>
+              <input type="number" id="${id}" value="${v}" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:14px;font-family:'JetBrains Mono',monospace;outline:none;" oninput="calcSim()">
+            </div>`).join('')}
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--t3);font-weight:700;margin-bottom:8px;">🚢 입항 계획</div>
+          ${[['2월 입항','si2',26],['3월 입항','si3',13],['4월 입항','si4',12],['5월 이후','si5',0]].map(([l,id,v])=>`
+            <div style="margin-bottom:8px;">
+              <div style="font-size:10px;color:var(--t3);margin-bottom:3px;">${l}</div>
+              <input type="number" id="${id}" value="${v}" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:14px;font-family:'JetBrains Mono',monospace;outline:none;" oninput="calcSim()">
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div id="sim-res"></div>
+  `;
+  calcSim();
+}
+
+function calcSim(){
+  const sl=parseFloat(document.getElementById('ss')?.value)||19;
+  const ws=parseFloat(document.getElementById('sw')?.value)||12.8;
+  const stock=parseFloat(document.getElementById('sk')?.value)||46;
+  const ins=[
+    parseFloat(document.getElementById('si2')?.value)||0,
+    parseFloat(document.getElementById('si3')?.value)||0,
+    parseFloat(document.getElementById('si4')?.value)||0,
+    parseFloat(document.getElementById('si5')?.value)||0,
+    0,0
+  ];
+  const mons=['2월','3월','4월','5월','6월','7월'];
+  const use=sl+ws;
+  let cur=stock, rows='', shortage=false;
+  mons.forEach((m,i)=>{
+    const inp=ins[i]||0;
+    const end=+(cur+inp-use).toFixed(1);
+    if(end<0) shortage=true;
+    const col=end<0?'var(--red)':end<10?'var(--yellow)':'var(--green)';
+    const lbl=end<0?'⚠️ 부족':end<10?'주의':'양호';
+    const bc=end<0?'r':end<10?'y':'g';
+    rows+=`<tr>
+      <td style="font-weight:600;">${m}</td>
+      <td class="mono tr">${cur.toFixed(1)}</td>
+      <td class="mono tr" style="color:var(--green);">${inp.toFixed(1)}</td>
+      <td class="mono tr" style="color:var(--yellow);">${use.toFixed(1)}</td>
+      <td class="mono tr" style="font-weight:700;color:${col};">${end.toFixed(1)}</td>
+      <td><span class="bd ${bc}">${lbl}</span></td>
+    </tr>`;
+    cur=end;
+  });
+  const el=document.getElementById('sim-res');
+  if(!el) return;
+  el.innerHTML=`
+    <div class="al ${shortage?'al-r':'al-g'}">${shortage?'⚠️ 재고 부족 월 발생 — 추가 발주 필요!':'✅ 현재 발주 계획으로 전 기간 재고 충분'}</div>
+    <div class="tw"><table>
+      <thead><tr><th>월</th><th>기초재고</th><th>입항</th><th>사용</th><th>기말재고</th><th>상태</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div class="al al-b" style="margin-top:8px;">💡 월 총 사용 = SL가공 ${sl} + 도매 ${ws} = <b>${use.toFixed(1)}컨</b></div>
+  `;
+}
+
+// ===== TAB NAVIGATION =====
+function go(name, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('page-'+name).classList.add('on');
+  el.classList.add('on');
+}
+
+// ===== START =====
+window.addEventListener('DOMContentLoaded',()=>{
+  init();
+  // 10분마다 자동 새로고침
+  setInterval(init, 10*60*1000);
+});
+</script>
+</body>
+</html>
