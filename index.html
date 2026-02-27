@@ -371,19 +371,19 @@ function selGSG(ci) {
   renderGSG();
 }
 function renderGSG() {
-  const numCols=[4,6,7];
   const colDefs=[
     {h:'대금결제일',ci:1,num:false},{h:'B/L',ci:2,num:false},{h:'오더월',ci:3,num:false},
-    {h:'브랜드',ci:4,num:false},{h:'물대(억) 💰',ci:6,num:true},{h:'유예상환일',ci:7,num:false},
-    {h:'유예기간',ci:8,num:true},{h:'지연이자 💰',ci:9,num:true}
+    {h:'브랜드',ci:4,num:false},{h:'물대(억)',ci:6,num:true},{h:'유예상환일',ci:7,num:false},
+    {h:'유예기간',ci:8,num:true},{h:'지연이자',ci:9,num:true}
   ];
-  const isNumIdx=[4,6,7];
   const total=GSG.reduce((a,r)=>a+N(r[6]),0);
   let selSum=null, selLabel='';
-  if (gsgSelCol>=0 && isNumIdx.includes(gsgSelCol)) {
+  if (gsgSelCol>=0) {
     const cd=colDefs[gsgSelCol];
-    selSum=GSG.reduce((a,r)=>a+N(r[cd.ci]),0);
-    selLabel=cd.h.replace(' 💰','');
+    if (cd && cd.num) {
+      selSum=GSG.reduce((a,r)=>a+N(r[cd.ci]),0);
+      selLabel=cd.h;
+    }
   }
   let h='<div class="al al-b">💡 <b>💰 표시된 열 헤더</b>를 클릭하면 그 열의 합계를 표시합니다. 열 제목 클릭으로 정렬도 가능합니다.</div>';
   h+='<div class="cg2">'+
@@ -395,9 +395,10 @@ function renderGSG() {
   h+='<div class="tw"><table id="t-gsg"><thead><tr>';
   colDefs.forEach(function(cd,i){
     const isSel = i===gsgSelCol;
-    const selCls = isSel ? ' class="col-hi-hdr"' : '';
-    const clickFn = isNumIdx.includes(i) ? ' onclick="selGSG('+i+')" style="cursor:pointer"' : '';
-    h += '<th '+th('t-gsg',i,cd.num)+selCls+clickFn+'>'+cd.h+' ↕</th>';
+    const bg = isSel ? 'background:#fff3b0;color:#9a6700;' : '';
+    const cur = cd.num ? 'cursor:pointer;' : '';
+    const click = cd.num ? ' onclick="selGSG('+i+')"' : '';
+    h += '<th data-tbl="t-gsg" data-col="'+i+'" data-num="'+(cd.num?'1':'0')+'" style="'+bg+cur+'"'+click+'>'+(cd.num?'💰 ':'')+cd.h+'</th>';
   });
   h+='</tr></thead><tbody>';
   GSG.forEach(function(r){
