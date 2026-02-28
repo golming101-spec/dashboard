@@ -143,7 +143,7 @@
 
   /* === TABLE === */
   .tbl-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  table { width: 100%; border-collapse: collapse; min-width: 480px; }
   thead { background: #f8fafc; position: sticky; top: 0; }
   th {
     padding: 8px 10px;
@@ -319,11 +319,93 @@
   .sim-negative { color: #dc2626; }
 
   /* === MOBILE TWEAKS === */
-  @media (max-width: 480px) {
-    .summary-grid { grid-template-columns: 1fr 1fr; }
-    .calc-grid { grid-template-columns: 1fr; }
-    .content { padding: 10px; }
+
+  /* ============================================
+     반응형 그리드 클래스
+  ============================================ */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 12px; }
+  .g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 12px; }
+  .g6 { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-bottom: 16px; }
+  .g2-prod { gap: 8px; margin-bottom: 12px; }
+  .gap-10 { gap: 10px; }
+  .gap-12 { gap: 12px; }
+  .gap-16 { gap: 16px; }
+  .mb12 { margin-bottom: 12px; }
+  .mb16 { margin-bottom: 16px; }
+
+  /* ============================================
+     태블릿 (768px 이하)
+  ============================================ */
+  @media (max-width: 768px) {
+    .g6 { grid-template-columns: repeat(3, 1fr); }
+    .g4 { grid-template-columns: repeat(2, 1fr); }
+    .g3 { grid-template-columns: repeat(2, 1fr); }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .rank-name { width: 100px; }
+    .content { padding: 12px; }
   }
+
+  /* ============================================
+     모바일 (480px 이하)
+  ============================================ */
+  @media (max-width: 480px) {
+    /* 레이아웃 */
+    .g2  { grid-template-columns: 1fr !important; gap: 10px; }
+    .g3  { grid-template-columns: 1fr !important; }
+    .g4  { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+    .g6  { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+    .g2-prod { grid-template-columns: repeat(2, 1fr) !important; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .calc-grid { grid-template-columns: 1fr !important; }
+
+    /* 글자 크기 */
+    .card-val, .card-value { font-size: 15px !important; }
+    .card-label { font-size: 10px !important; }
+    .section-title { font-size: 12px; }
+
+    /* 헤더 */
+    .app-header { height: 44px; padding: 0 12px; }
+    .app-title { font-size: 13px; }
+    .header-date { font-size: 9px; }
+
+    /* 탭 */
+    .tab-btn { padding: 10px 10px; font-size: 11px; gap: 4px; }
+    .tab-icon { font-size: 13px; }
+
+    /* 콘텐츠 */
+    .content { padding: 10px; }
+
+    /* 카드 */
+    .card, .payment-card { padding: 10px 12px; }
+
+    /* 테이블 - 모바일에선 스크롤 */
+    .tbl-wrap, .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 500px; }
+    td, th { padding: 6px 8px; font-size: 11px; }
+
+    /* 랭킹 */
+    .rank-name { width: 80px; font-size: 10px; }
+    .rank-val  { font-size: 10px; width: 40px; }
+
+    /* 차트 컨테이너 */
+    [style*="height:200px"] { height: 160px !important; }
+    [style*="height:140px"] { height: 120px !important; }
+
+    /* 생산팀 카드 border-radius */
+    #page-production > div:first-child + div > div {
+      border-radius: 10px;
+    }
+
+    /* 경쟁 바 최소 width 조정 */
+    #competeChart > div { min-width: unset !important; }
+
+    /* 필터바 wrap */
+    .filter-bar { gap: 6px; }
+    .filter-bar input { min-width: 120px; width: 100%; }
+    .filter-bar select { width: 100%; }
+  }
+
 
   /* === FLOATING ALERT === */
   .alert-banner {
@@ -898,7 +980,7 @@
     <div class="section-title">SL FnF 사용량 기준 시뮬레이션</div>
 
     <div class="card" style="margin-bottom:12px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="g2">
         <div class="sim-section">
           <div class="calc-label" style="margin-bottom:8px;font-weight:600;">기본 설정</div>
           <div class="sim-row"><label>월 SL 가공량</label><input type="number" id="sim_sl" value="19" oninput="runSimulation()"> <span style="font-size:11px;color:var(--text3);">컨</span></div>
@@ -1021,7 +1103,7 @@
     </div>
 
     <!-- KPI 카드 -->
-    <div class="summary-grid" style="grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px;">
+    <div class="summary-grid" class="g6">
       <div class="card c-blue"><div class="card-label">🏢 창고재고 중량</div><div class="card-val">2230t</div><div style="font-size:10px;color:var(--text3)">186,944box</div></div>
       <div class="card c-green"><div class="card-label">📥 기간 매입</div><div class="card-val">54.8억</div><div style="font-size:10px;color:var(--text3)">01~02월</div></div>
       <div class="card c-red"><div class="card-label">📤 기간 매출</div><div class="card-val">98.5억</div><div style="font-size:10px;color:var(--text3)">01~02월</div></div>
@@ -1031,12 +1113,12 @@
     </div>
 
     <!-- 월별 차트 + Top10 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:start;">
+    <div class="g2">
 
       <!-- 월별 매입/매출 차트 -->
       <div class="card" style="border-top:3px solid #2563eb;padding:16px;">
         <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:#1e293b;">📈 월별 매입/매출 추이</div>
-        <div style="position:relative;height:200px;width:100%;">
+        <div style="position:relative;height:200px;width:100%;" class="chart-box">
           <canvas id="monthlyChart"></canvas>
         </div>
       </div>
@@ -1044,14 +1126,14 @@
       <!-- 월별 생산 차트 -->
       <div class="card" style="border-top:3px solid #f59e0b;padding:16px;">
         <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:#1e293b;">⚙️ 월별 생산 현황</div>
-        <div style="position:relative;height:200px;width:100%;">
+        <div style="position:relative;height:200px;width:100%;" class="chart-box">
           <canvas id="prodChart"></canvas>
         </div>
       </div>
     </div>
 
     <!-- Top10 매출 / 매입 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div class="g2">
       <div class="card" style="border-top:3px solid #dc2626;padding:16px;">
         <div style="font-size:13px;font-weight:700;color:#dc2626;margin-bottom:12px;">📤 매출 TOP 10 <span style="font-size:11px;color:var(--text3);font-weight:400;">(출고처 기준)</span></div>
         <div id="top10OutBars" class="rank-list"><div class="rank-row"><div class="rank-num">1</div><div class="rank-name" title="주식회사 외식전문기업제이케이">주식회사 외식전문기업제이케이</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:100%"></div></div><div class="rank-val">1767M</div></div><div class="rank-row"><div class="rank-num">2</div><div class="rank-name" title="주식회사 태양푸드">주식회사 태양푸드</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:83%"></div></div><div class="rank-val">1458M</div></div><div class="rank-row"><div class="rank-num">3</div><div class="rank-name" title="(주) 디지에프앤비">(주) 디지에프앤비</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:44%"></div></div><div class="rank-val">769M</div></div><div class="rank-row"><div class="rank-num">4</div><div class="rank-name" title="주식회사 기영에프앤비">주식회사 기영에프앤비</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:27%"></div></div><div class="rank-val">477M</div></div><div class="rank-row"><div class="rank-num">5</div><div class="rank-name" title="영맨 프로젝트">영맨 프로젝트</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:26%"></div></div><div class="rank-val">461M</div></div><div class="rank-row"><div class="rank-num">6</div><div class="rank-name" title="신라외식개발(티바)">신라외식개발(티바)</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:25%"></div></div><div class="rank-val">438M</div></div><div class="rank-row"><div class="rank-num">7</div><div class="rank-name" title="(주) 하랑푸드">(주) 하랑푸드</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:22%"></div></div><div class="rank-val">388M</div></div><div class="rank-row"><div class="rank-num">8</div><div class="rank-name" title="청년푸드(체리매입)">청년푸드(체리매입)</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:19%"></div></div><div class="rank-val">334M</div></div><div class="rank-row"><div class="rank-num">9</div><div class="rank-name" title="주식회사 부막">주식회사 부막</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:16%"></div></div><div class="rank-val">284M</div></div><div class="rank-row"><div class="rank-num">10</div><div class="rank-name" title="디케이 팩토리(DK FACTORY)">디케이 팩토리(DK FACTORY)</div><div class="rank-bar-wrap"><div class="rank-bar out-bar" style="width:14%"></div></div><div class="rank-val">240M</div></div></div>
@@ -1063,7 +1145,7 @@
     </div>
 
     <!-- 최근 생산 + 창고재고 요약 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="g2">
       <div>
         <div style="font-size:13px;font-weight:700;margin-bottom:8px;">⚙️ 최근 생산 현황 (10일)</div>
         <div class="table-wrap"><table>
@@ -1087,11 +1169,11 @@
     <div style="font-size:16px;font-weight:800;margin-bottom:16px;">⚙️ 생산팀 일일 생산 현황</div>
 
     <!-- 팀 비교 KPI -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+    <div class="g2">
       <!-- 정육팀 -->
       <div style="background:#fffbeb;border:2px solid #f59e0b;border-radius:12px;padding:16px;">
         <div style="font-size:14px;font-weight:800;color:#d97706;margin-bottom:12px;">🥩 정육팀</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div class="g2 g2-prod">
           <div style="background:white;border-radius:8px;padding:10px;text-align:center;">
             <div style="font-size:10px;color:#92400e;">기간 총 생산량</div>
             <div style="font-size:18px;font-weight:800;color:#d97706;" id="jyTotalDisp">-</div>
@@ -1109,7 +1191,7 @@
             <div style="font-size:18px;font-weight:800;color:#d97706;" id="jyAvgWorkers">-</div>
           </div>
         </div>
-        <div style="position:relative;height:140px;width:100%;">
+        <div style="position:relative;height:140px;width:100%;" class="chart-box-sm">
           <canvas id="jyChart"></canvas>
         </div>
       </div>
@@ -1117,7 +1199,7 @@
       <!-- 뼈닭팀 -->
       <div style="background:#f5f3ff;border:2px solid #8b5cf6;border-radius:12px;padding:16px;">
         <div style="font-size:14px;font-weight:800;color:#7c3aed;margin-bottom:12px;">🍗 뼈닭팀</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div class="g2 g2-prod">
           <div style="background:white;border-radius:8px;padding:10px;text-align:center;">
             <div style="font-size:10px;color:#4c1d95;">기간 총 생산량</div>
             <div style="font-size:18px;font-weight:800;color:#7c3aed;" id="bdTotalDisp">-</div>
@@ -1135,7 +1217,7 @@
             <div style="font-size:18px;font-weight:800;color:#7c3aed;" id="bdAvgWorkers">-</div>
           </div>
         </div>
-        <div style="position:relative;height:140px;width:100%;">
+        <div style="position:relative;height:140px;width:100%;" class="chart-box-sm">
           <canvas id="bdChart"></canvas>
         </div>
       </div>
@@ -1148,7 +1230,7 @@
     </div>
 
     <!-- 상세 테이블 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="g2">
       <div>
         <div style="font-size:13px;font-weight:700;color:#d97706;margin-bottom:8px;">🥩 정육팀 일별 상세</div>
         <div class="table-wrap"><table>
@@ -1175,7 +1257,7 @@
   <!-- ===== 창고재고 ===== -->
   <div id="page-warehouse" class="page">
     <div class="section-title">🏢 삼일2냉장 창고재고 현황 <span style="font-size:12px;color:var(--text3);">기준: 2026-02-27</span></div>
-    <div class="summary-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="summary-grid" class="g3">
       <div class="card c-blue"><div class="card-label">총 재고 수량</div><div class="card-val">186,944 box</div></div>
       <div class="card c-blue"><div class="card-label">총 재고 중량</div><div class="card-val">2,230,356 kg</div></div>
       <div class="card"><div class="card-label">컨테이너 수</div><div class="card-val" id="whConCount">-</div></div>
@@ -1224,7 +1306,7 @@
       <button class="btn" onclick="resetIn()">초기화</button>
       <button class="btn" style="background:var(--gre);color:#fff" onclick="exportInCSV()">📁 CSV</button>
     </div>
-    <div class="summary-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
+    <div class="summary-grid" class="g4">
       <div class="card c-green"><div class="card-label">입고건수</div><div class="card-val" id="inC">-</div></div>
       <div class="card c-green"><div class="card-label">입고금액합계</div><div class="card-val" id="inA">-</div></div>
       <div class="card"><div class="card-label">총수량</div><div class="card-val" id="inQ">-</div></div>
@@ -1256,7 +1338,7 @@
       <button class="btn" onclick="resetOut()">초기화</button>
       <button class="btn" style="background:var(--gre);color:#fff" onclick="exportOutCSV()">📁 CSV</button>
     </div>
-    <div class="summary-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
+    <div class="summary-grid" class="g4">
       <div class="card c-red"><div class="card-label">출고건수</div><div class="card-val" id="outC">-</div></div>
       <div class="card c-red"><div class="card-label">출고금액(매출)</div><div class="card-val" id="outA">-</div></div>
       <div class="card"><div class="card-label">총수량</div><div class="card-val" id="outQ">-</div></div>
@@ -1305,14 +1387,14 @@
         </select></div>
       <button class="btn" style="background:var(--green);color:#fff" onclick="exportSumCSV()">📁 CSV</button>
     </div>
-    <div class="summary-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
+    <div class="summary-grid" class="g4">
       <div class="card c-blue"><div class="card-label">기초재고금액 (25.12.31)</div><div class="card-val" id="smBBase">-</div></div>
       <div class="card c-green"><div class="card-label">기간 입고금액</div><div class="card-val" id="smIA">-</div></div>
       <div class="card c-red"><div class="card-label">기간 출고금액(매출)</div><div class="card-val" id="smOA">-</div></div>
       <div class="card c-cyan"><div class="card-label">기말재고금액 (추정)</div><div class="card-val" id="smBA">-</div></div>
     </div>
     <div class="table-wrap" style="overflow-x:auto;">
-    <table style="min-width:1000px;">
+    <table style="min-width:700px;">
       <thead><tr>
         <th onclick="siSum('0a')" style="min-width:160px;">품목명</th>
         <th style="min-width:70px;">구분</th>
@@ -1348,7 +1430,7 @@
       <button class="btn" onclick="resetIn()">초기화</button>
       <button class="btn" style="background:var(--gre);color:#fff" onclick="exportInCSV()">📁 CSV</button>
     </div>
-    <div class="summary-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
+    <div class="summary-grid" class="g4">
       <div class="card c-green"><div class="card-label">입고건수</div><div class="card-val" id="inC">-</div></div>
       <div class="card c-green"><div class="card-label">입고금액합계</div><div class="card-val" id="inA">-</div></div>
       <div class="card"><div class="card-label">총수량</div><div class="card-val" id="inQ">-</div></div>
@@ -1380,7 +1462,7 @@
       <button class="btn" onclick="resetOut()">초기화</button>
       <button class="btn" style="background:var(--gre);color:#fff" onclick="exportOutCSV()">📁 CSV</button>
     </div>
-    <div class="summary-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
+    <div class="summary-grid" class="g4">
       <div class="card c-red"><div class="card-label">출고건수</div><div class="card-val" id="outC">-</div></div>
       <div class="card c-red"><div class="card-label">출고금액(매출)</div><div class="card-val" id="outA">-</div></div>
       <div class="card"><div class="card-label">총수량</div><div class="card-val" id="outQ">-</div></div>
@@ -1418,7 +1500,7 @@
         </select></div>
       <button class="btn" style="background:var(--gre);color:#fff" onclick="exportSumCSV()">📁 CSV</button>
     </div>
-    <div class="summary-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px;">
+    <div class="summary-grid" class="g4">
       <div class="card"><div class="card-label">품목수</div><div class="card-val" id="smC">-</div></div>
       <div class="card c-green"><div class="card-label">총입고금액</div><div class="card-val" id="smIA">-</div></div>
       <div class="card c-red"><div class="card-label">총출고금액(매출)</div><div class="card-val" id="smOA">-</div></div>
